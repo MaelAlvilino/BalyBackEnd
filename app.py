@@ -55,6 +55,43 @@ def cadastrar ():
 
         return 'usuario criado com sucesso.'
 
+        #Atualizar Procedimento
+@app.route("/atualizarProcedimento", methods = ['PUT'])
+def atualizar_Procedimento ():
+    if request.method== 'PUT':
+        json = request.get_json()
+        
+        schema = {
+            'id_Procedimento': {'type': 'string', 'required': True},
+            'nome': {'type': 'string', 'required': True},
+            'tipo': {'type': 'string', 'required': True},
+            'Duração_mendia': {'type': 'string', 'required': True},
+            'descricao': {'type': 'string', 'required': True},
+            'imagem': {'type': 'string', 'required': True}
+        }
+        validate = Validator(schema)
+                
+        if( validate.validate(json) is not True):
+            return validate.errors, 400
+         
+        db: Database = app.config['database']
+
+        dbSession = db.session_scoped()
+
+        procedimento = dbSession.query(Procedimento).filter_by(id_Procedimento=json.get('id_Procedimento')).first()
+        
+        if not procedimento:
+            return "Erro ao alterar o Procedimento", 404
+
+        procedimento.nome = json.get('nome')
+        procedimento.tipo = json.get('tipo')
+        procedimento.Duração_mendia = json.get('Duração_mendia')
+        procedimento.descricao = json.get('descricao')
+        procedimento.imagem = json.get('imagem')
+
+        dbSession.commit()
+
+        return 'Procedimento atualizado com sucesso.'
 
         #Cadastrar Funcionario
 @app.route("/cadastroFuncionario", methods = ['POST'])
@@ -118,8 +155,6 @@ def cadastrar_Procedimento ():
         cadastrarBanco(procedimento)
 
         return 'Procedimento criado com sucesso.'
-
-
 
 def cadastrarBanco(usuario: Union[Usuario,Usuario_Funcionario,Procedimento]):
     # acrescentar o banco
